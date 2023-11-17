@@ -13,5 +13,6 @@ namespace basic_csharp.Models
         public long TotalPrice { get; set; }
         public string OrderRecord { get; set; }
         public DateTime CreateDate { get; set; }
+
     }
 }

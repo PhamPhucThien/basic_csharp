@@ -182,6 +182,7 @@ namespace basic_csharp
                         useApp = true;
                     else useApp = false;
                 }
+
                 if (loginStatus)
                 {
                     if (role == "User") UserOption();
@@ -190,6 +191,7 @@ namespace basic_csharp
                     name = "";
                     useApp = false; 
                 } 
+
             }
         }
         public static void UserOption()
@@ -510,6 +512,7 @@ namespace basic_csharp
                 Console.WriteLine("---BookStore App---\n***");
 
                 ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                 if (getCart.Object == null)
                 {
                     Console.WriteLine("The cart is empty.\nPress any key to go back");
@@ -662,6 +665,7 @@ namespace basic_csharp
                 Console.WriteLine("---BookStore App---\n***");
 
                 ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                 if (getCart.Object == null)
                 {
                     Console.WriteLine("The cart is empty.\nPress any key to go back");
@@ -738,6 +742,7 @@ namespace basic_csharp
                                 }
                             }
                             cartSQLAdapter.UpdateCartRecord(accountId, newRecords);
+
                             break;
                         }
                     }
@@ -817,6 +822,7 @@ namespace basic_csharp
                                     {
                                         isDuplicated = false;
                                         ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                                         string[] records = getCart.Object.CartRecord.Split('/');
                                         string newRecords = "";
                                         foreach (string record in records)
