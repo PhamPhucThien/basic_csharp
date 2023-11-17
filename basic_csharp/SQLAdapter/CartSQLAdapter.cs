@@ -48,7 +48,7 @@ namespace basic_csharp.SQLAdapter
             throw new NotImplementedException();
         }
 
-        public ResponseObject<Cart> getCartByAccountId(Guid accountId)
+        public ResponseObject<Cart> GetCartByAccountId(Guid accountId)
         {
             ResponseObject<Cart> response = new ResponseObject<Cart>();
             string query = "SELECT cart_record FROM " + TableName + " WHERE account_id = '" + accountId + "'";
@@ -71,7 +71,7 @@ namespace basic_csharp.SQLAdapter
             return response;
         }
 
-        public int updateCartRecord(Guid accountId, string newRecords)
+        public int UpdateCartRecord(Guid accountId, string newRecords)
         {
             string query = "UPDATE " + TableName + " SET cart_record = '" + newRecords + "' WHERE account_id = '" + accountId + "'";
 

@@ -174,6 +174,13 @@ namespace basic_csharp
                 else
                 {
                     response = account.Log;
+                    Console.Clear();
+                    Console.WriteLine(response);
+                    Console.Write("Do you want to still login? (Press 1 to continue login, any to go back)\n" +
+                        "Value: ");
+                    if (getValue() == 1)
+                        useApp = true;
+                    else useApp = false;
                 }
 
                 if (loginStatus)
@@ -182,14 +189,9 @@ namespace basic_csharp
                     if (role == "Admin") AdminOption();
                     role = "";
                     name = "";
-                }
-                Console.Clear();
-                if (response != "") Console.WriteLine(response);
-                Console.Write("Do you want to still login? (Press 1 to continue login, any to go back)\n" +
-                    "Value: ");
-                if (getValue() == 1)
-                    useApp = true;
-                else useApp = false;
+                    useApp = false; 
+                } 
+
             }
         }
         public static void UserOption()
@@ -207,6 +209,7 @@ namespace basic_csharp
                     "3 - Change quantity of product\n" +
                     "4 - Create order from cart\n" +
                     "5 - View cart\n" +
+                    "6 - View orders\n" +
                     "Any - Log out\n" +
                     "Value: ");
                 value = getValue();
@@ -227,6 +230,120 @@ namespace basic_csharp
                     case 5:
                         ViewCart();
                         break;
+                    case 6:
+                        ViewOrder();
+                        break;
+                    default:
+                        useApp = false;
+                        break;
+                }
+            }
+        }
+
+        private static void ViewOrder()
+        {
+            bool useApp = true;
+            int page = 1, getPage = 0;
+            string searchValue = "", lastSearchValue = "";
+            OrderSQLAdapter orderSQLAdapter = new OrderSQLAdapter();
+
+            while (useApp)
+            {
+                int value, getCode;
+                Console.Clear();
+                Console.WriteLine("---BookStore App---\n***");
+                ResponseObject<Order> order = orderSQLAdapter.GetOrderWithPage(accountId, page);
+                if (order.Object != null)
+                {
+                    string[] records = order.Object.OrderRecord.Split('/');
+                    foreach (string record in records)
+                    {
+                        if (record != "")
+                        {
+                            string[] recordInfo = record.Split("&");
+                            Console.WriteLine(recordInfo[0] + " - " + recordInfo[1] + " - " + recordInfo[2] + "$ " + recordInfo[3] + (recordInfo[3].Equals("1") ? " book" : " books"));
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("There is no order!\nPress any key to go back!");
+                    Console.ReadLine();
+                    break;
+                }
+
+                Console.WriteLine("________________________\n" +
+                    "Create date: " + order.Object.CreateDate.ToString() + "\n" +
+                    "Total price: " + order.Object.TotalPrice + "\n" +
+                    "Total page: " + order.Log + "\n" +
+                    "Current page: " + page + "\n" +
+                    "________________________");
+
+                Console.Write("1 - Next page\n" +
+                              "2 - Previous page\n" +
+                              "3 - Go to page\n" +
+                              "Any - Log out\n" +
+                              "Value: ");
+                value = getValue();
+                switch (value)
+                {
+                    case 1:
+                        try
+                        {
+                            if (page == Convert.ToInt32(order.Log))
+                            {
+                                Console.Clear();
+                                Console.WriteLine("This is the last page.\nPress any key to go back!");
+                                Console.ReadLine();
+                            }
+                            else
+                            {
+                                page++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Some sh*t happened and I don't know why!");
+                        }
+                        break;
+                    case 2:
+                        try
+                        {
+                            if (page == 1)
+                            {
+                                Console.Clear();
+                                Console.WriteLine("This is the first page.\nPress any key to go back!");
+                                Console.ReadLine();
+                            }
+                            else
+                            {
+                                page--;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Some sh*t happened and I don't know why!");
+                        }
+                        break;
+                    case 3:
+                        Console.Write("Enter page number (Press 0 or not number to go back)\n" +
+                            "Value: ");
+                        getPage = getValue();
+                        if (getPage != 0)
+                        {
+                            if (getPage < 1 || getPage > Convert.ToInt32(order.Log))
+                            {
+                                Console.Clear();
+                                Console.WriteLine("Page is out of range! \nPlease enter valid number.");
+                                Console.ReadLine();
+                            }
+                            else
+                            {
+                                page = getPage;
+                            }
+
+                        }
+                        break;
                     default:
                         useApp = false;
                         break;
@@ -246,7 +363,7 @@ namespace basic_csharp
                 Console.Clear();
                 Console.WriteLine("---BookStore App---\n***");
 
-                ResponseObject<Cart> getCart = cartSQLAdapter.getCartByAccountId(accountId);
+                ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
                 string[] records = getCart.Object.CartRecord.Split('/');
                 List<int> codes = new List<int>();
                 foreach (string record in records)
@@ -302,9 +419,84 @@ namespace basic_csharp
         }
         private static void CreateOrder()
         {
+            CartSQLAdapter cartSQLAdapter = new CartSQLAdapter();
+            ProductSQLAdapter productSQLAdapter = new ProductSQLAdapter();
+            OrderSQLAdapter orderSQLAdapter = new OrderSQLAdapter();
+
+
+            ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
             Console.Clear();
-            Console.Write("Nothing to look at here.\nPress any key to go back!");
-            Console.ReadLine();
+            Console.WriteLine("---BookStore App---\n***");
+
+            if (getCart.Object == null)
+            {
+                Console.Clear();
+                Console.WriteLine("The cart is empty, we can not create order.\nPress any key to go back");
+                Console.ReadLine();
+            }
+            else
+            {
+                string[] records = getCart.Object.CartRecord.Split('/');
+                List<int> codes = new List<int>();
+                foreach (string record in records)
+                {
+                    if (record != "")
+                    {
+                        string[] recordInfo = record.Split("&");
+                        try
+                        {
+                            codes.Add(Convert.ToInt32(recordInfo[0]));
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Some sh*t happened and I don't know why!");
+                        }
+                    }
+                }
+
+                ResponseObject<List<Product>> getProducts = productSQLAdapter.GetByListOfCode(codes);
+                string newRecords = "";
+                long total = 0;
+                foreach (string record in records)
+                {
+                    if (record != "")
+                    {
+                        string[] recordInfo = record.Split("&");
+                        try
+                        {
+                            int code = Convert.ToInt32(recordInfo[0]);
+                            string quantityInString = recordInfo[recordInfo.Length - 1];
+                            int quantity = Convert.ToInt32(quantityInString);
+                            Console.Write(code + " - ");
+                            foreach (Product product in getProducts.Object)
+                            {
+                                if (product.Code == code)
+                                {
+                                    Console.WriteLine(product.ProductName + " - " + product.Price + "$ - " + quantityInString + (quantityInString.Equals("1") ? " book" : " books"));
+                                    newRecords += product.Code + "&" + product.ProductName + "&" + product.Price + "&" + quantity + "/";
+                                    total += product.Price * quantity;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Some sh*t happened and I don't know why!");
+                        }
+                    }
+                }
+
+                Console.WriteLine("----------------Total: " + total + "$");
+                Console.Write("Do you want to create order? (Press 1 to confirm, any to deny): ");
+                int value = getValue();
+                if (value == 1)
+                {
+                    orderSQLAdapter.AddOrder(accountId, newRecords, total);
+                    cartSQLAdapter.UpdateCartRecord(accountId, "");
+                    Console.Clear();
+                    Console.Write("Create record successfully.\nPress any key to go back!");
+                    Console.ReadLine();
+                }
+            }
         }
 
         private static void ChangeQuantityInCart()
@@ -319,7 +511,8 @@ namespace basic_csharp
                 Console.Clear();
                 Console.WriteLine("---BookStore App---\n***");
 
-                ResponseObject<Cart> getCart = cartSQLAdapter.getCartByAccountId(accountId);
+                ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                 if (getCart.Object == null)
                 {
                     Console.WriteLine("The cart is empty.\nPress any key to go back");
@@ -395,7 +588,6 @@ namespace basic_csharp
                                     {
                                         try
                                         {
-                                            string[] recordInfo = record.Split("&");
                                             if (getQuantity <= getByCode.Object.Quantity)
                                             {
                                                 newRecords += getByCode.Object.Code + "&" + getQuantity + "/";
@@ -427,7 +619,7 @@ namespace basic_csharp
                             else if (!falseUpdate)
                             {
                                 Console.Clear();
-                                int x = cartSQLAdapter.updateCartRecord(accountId, newRecords);
+                                int x = cartSQLAdapter.UpdateCartRecord(accountId, newRecords);
                                 if (x >= 1)
                                 {
                                     Console.WriteLine("Update quantity successfully!\nPress any key to go back!");
@@ -472,7 +664,8 @@ namespace basic_csharp
                 Console.Clear();
                 Console.WriteLine("---BookStore App---\n***");
 
-                ResponseObject<Cart> getCart = cartSQLAdapter.getCartByAccountId(accountId);
+                ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                 if (getCart.Object == null)
                 {
                     Console.WriteLine("The cart is empty.\nPress any key to go back");
@@ -548,7 +741,8 @@ namespace basic_csharp
                                     }
                                 }
                             }
-                            cartSQLAdapter.updateCartRecord(accountId, newRecords);
+                            cartSQLAdapter.UpdateCartRecord(accountId, newRecords);
+
                             break;
                         }
                     }
@@ -627,7 +821,8 @@ namespace basic_csharp
                                     if (getByCode.Log == null)
                                     {
                                         isDuplicated = false;
-                                        ResponseObject<Cart> getCart = cartSQLAdapter.getCartByAccountId(accountId);
+                                        ResponseObject<Cart> getCart = cartSQLAdapter.GetCartByAccountId(accountId);
+
                                         string[] records = getCart.Object.CartRecord.Split('/');
                                         string newRecords = "";
                                         foreach (string record in records)
@@ -680,7 +875,7 @@ namespace basic_csharp
                                         if (!falseUpdate)
                                         {
                                             Console.Clear();
-                                            int x = cartSQLAdapter.updateCartRecord(accountId, newRecords);
+                                            int x = cartSQLAdapter.UpdateCartRecord(accountId, newRecords);
                                             if (x >= 1)
                                             {
                                                 Console.WriteLine("Add successfully!\nPress any key to go back!");

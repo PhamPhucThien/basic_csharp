@@ -9,7 +9,10 @@ namespace basic_csharp.Models
     public class Order
     {
         public Guid Id { get; set; }
-        public int TotalPrice { get; set; }
-        public String orderRecord { get; set; }
+        public Guid AccountId { get; set; }
+        public long TotalPrice { get; set; }
+        public string OrderRecord { get; set; }
+        public DateTime CreateDate { get; set; }
+
     }
 }
