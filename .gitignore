@@ -8,3 +8,5 @@
 /.vs/basic_csharp/v17
 /.vs
 /basic_csharp/obj
+/basic_csharp/bin/Debug/net6.0
+
