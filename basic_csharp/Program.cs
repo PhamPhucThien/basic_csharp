@@ -17,11 +17,6 @@ namespace basic_csharp
     /// </summary>
     public class Program
     {
-        static List<Account> users = new List<Account>();
-        static List<Product> products = new List<Product>();
-        static List<Order> orders = new List<Order>();
-        static Cart cart = new Cart();
-        static string connectionString = "Data Source=localhost;Initial Catalog=BookStore;Persist Security Info=True;User ID=sa;Password=12345";
         static string response = "";
         static string username, password, name = "", role = "";
         static Guid accountId;
@@ -428,7 +423,7 @@ namespace basic_csharp
             Console.Clear();
             Console.WriteLine("---BookStore App---\n***");
 
-            if (getCart.Object == null)
+            if (getCart.Object.CartRecord == null || getCart.Object.CartRecord == "")
             {
                 Console.Clear();
                 Console.WriteLine("The cart is empty, we can not create order.\nPress any key to go back");
