@@ -1,8 +1,6 @@
-﻿using Azure;
-using basic_csharp.Models;
+﻿using basic_csharp.Models;
 using basic_csharp.Payload.Response;
 using basic_csharp.SQLAdapter;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
 using System.Data;
 
